@@ -18,7 +18,6 @@ struct BitmapInfo {
   const unsigned char* data;
   int width;
   int height;
-  int byteCount;
 };
 
 
@@ -88,13 +87,13 @@ const int myBitmap2Height = 64;
 // 이 목록도 직접 수정하는 곳입니다.
 //
 // 예:
-// { myBitmap.data(), 64, 64, myBitmap.size() }
+// { myBitmap.data(), 64, 64 }
 //
 // 전체 화면 200x200 이미지는 이렇게 적을 수 있습니다.
-// { myFullScreenBitmap.data(), 0, 0, myFullScreenBitmap.size() }
+// { myFullScreenBitmap.data(), 0, 0 }
 const BitmapInfo bookBitmaps[] = {
-  { myBitmap.data(), myBitmapWidth, myBitmapHeight, (int)myBitmap.size() },
-  { myBitmap2.data(), myBitmap2Width, myBitmap2Height, (int)myBitmap2.size() }
+  { myBitmap.data(), myBitmapWidth, myBitmapHeight },
+  { myBitmap2.data(), myBitmap2Width, myBitmap2Height }
 };
 
 // 페이지 순서 정하기
@@ -336,9 +335,6 @@ void drawBitmapPage(const unsigned char* bitmap, int bitmapWidth, int bitmapHeig
 void drawBitmapByIndex(int bitmapIndex) {
   if (bitmapIndex >= 0 && bitmapIndex < bitmapPageCount) {
     BitmapInfo bitmap = bookBitmaps[bitmapIndex];
-    if (bitmap.byteCount <= 1) {
-      return;
-    }
     drawBitmapPage(bitmap.data, bitmap.width, bitmap.height);
   }
 }
