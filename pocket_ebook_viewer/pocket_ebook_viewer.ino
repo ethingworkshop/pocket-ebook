@@ -28,7 +28,7 @@ struct BitmapInfo {
 // eBook 제목
 // 현재 폰트에서는 한글이 제대로 표시되지 않을 수 있습니다.
 // 화면 테스트는 영어/숫자로 먼저 해보는 것을 추천합니다.
-const char* bookTitle = "My Pocket Ebook";
+const char* bookTitle = "";
 
 // eBook에 들어갈 문장들
 // 문장 하나가 한 페이지처럼 사용됩니다.
