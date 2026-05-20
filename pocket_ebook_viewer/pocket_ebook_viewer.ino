@@ -45,47 +45,6 @@ const char* bookPages[] = {
 // 1 = 마지막 페이지 뒤에 처음 페이지로 돌아가기
 const int pageMode = 1;
 
-// 이미지 데이터 예시 1: 16x16 작은 별
-// 직접 변환한 이미지가 있다면 myBitmap에 붙여넣어도 됩니다.
-const unsigned char defaultStarBitmap[] = {
-  0x00, 0x00,
-  0x01, 0x80,
-  0x01, 0x80,
-  0x03, 0xC0,
-  0x33, 0xCC,
-  0x3F, 0xFC,
-  0x0F, 0xF0,
-  0x07, 0xE0,
-  0x07, 0xE0,
-  0x0F, 0xF0,
-  0x1D, 0xB8,
-  0x38, 0x1C,
-  0x30, 0x0C,
-  0x00, 0x00,
-  0x00, 0x00,
-  0x00, 0x00
-};
-
-// 이미지 데이터 예시 2: 16x16 작은 하트
-const unsigned char defaultHeartBitmap[] = {
-  0x00, 0x00,
-  0x0C, 0x30,
-  0x1E, 0x78,
-  0x3F, 0xFC,
-  0x7F, 0xFE,
-  0x7F, 0xFE,
-  0x7F, 0xFE,
-  0x3F, 0xFC,
-  0x1F, 0xF8,
-  0x0F, 0xF0,
-  0x07, 0xE0,
-  0x03, 0xC0,
-  0x01, 0x80,
-  0x00, 0x00,
-  0x00, 0x00,
-  0x00, 0x00
-};
-
 // 이미지 데이터
 // 이미지를 넣고 싶으면 아래 변환기에서 만든 비트맵 데이터를 { } 안에 붙여넣습니다.
 //
@@ -133,10 +92,8 @@ const int myBitmap2Height = 64;
 // 전체 화면 200x200 이미지는 이렇게 적을 수 있습니다.
 // { myFullScreenBitmap.data(), 0, 0 }
 const BitmapInfo bookBitmaps[] = {
-  { myBitmap.data(), myBitmapWidth, myBitmapHeight },
-  { myBitmap2.data(), myBitmap2Width, myBitmap2Height },
-  { defaultStarBitmap, 16, 16 },
-  { defaultHeartBitmap, 16, 16 }
+  { myBitmap.size() > 0 ? myBitmap.data() : nullptr, myBitmapWidth, myBitmapHeight },
+  { myBitmap2.size() > 0 ? myBitmap2.data() : nullptr, myBitmap2Width, myBitmap2Height }
 };
 
 // 페이지 순서 정하기
