@@ -76,11 +76,11 @@ const std::vector<unsigned char> myBitmap2 = {
 // 변환한 이미지의 크기에 맞게 수정합니다.
 // 1.54인치 e-paper에서는 64x64 또는 80x80 정도를 추천합니다.
 // 전체 화면 200x200 이미지를 쓰고 싶으면 width와 height를 0으로 둡니다.
-const int myBitmapWidth = 64;
-const int myBitmapHeight = 64;
+const int myBitmapWidth = 0;
+const int myBitmapHeight = 0;
 
-const int myBitmap2Width = 64;
-const int myBitmap2Height = 64;
+const int myBitmap2Width = 0;
+const int myBitmap2Height = 0;
 
 // eBook에 들어갈 이미지들
 // 이미지를 추가하려면 위에 이미지 데이터를 만들고, 아래 목록에 추가합니다.
