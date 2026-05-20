@@ -18,6 +18,7 @@ struct BitmapInfo {
   const unsigned char* data;
   int width;
   int height;
+  int byteCount;
 };
 
 
@@ -63,13 +64,13 @@ const int pageMode = 1;
 //   0x00, 0x18, 0x3C, 0x7E, ...
 // };
 const std::vector<unsigned char> myBitmap = {
-  // 여기에 이미지 데이터 붙여넣기
+  0x00 // 여기에 이미지 데이터 붙여넣기
 };
 
 // 두 번째 이미지가 필요하면 여기에 붙여넣습니다.
 // 필요 없으면 비워둡니다.
 const std::vector<unsigned char> myBitmap2 = {
-  // 여기에 두 번째 이미지 데이터 붙여넣기
+  0x00 // 여기에 두 번째 이미지 데이터 붙여넣기
 };
 
 // 이미지 크기
@@ -87,13 +88,13 @@ const int myBitmap2Height = 64;
 // 이 목록도 직접 수정하는 곳입니다.
 //
 // 예:
-// { myBitmap.data(), 64, 64 }
+// { myBitmap.data(), 64, 64, myBitmap.size() }
 //
 // 전체 화면 200x200 이미지는 이렇게 적을 수 있습니다.
-// { myFullScreenBitmap.data(), 0, 0 }
+// { myFullScreenBitmap.data(), 0, 0, myFullScreenBitmap.size() }
 const BitmapInfo bookBitmaps[] = {
-  { myBitmap.size() > 0 ? myBitmap.data() : nullptr, myBitmapWidth, myBitmapHeight },
-  { myBitmap2.size() > 0 ? myBitmap2.data() : nullptr, myBitmap2Width, myBitmap2Height }
+  { myBitmap.data(), myBitmapWidth, myBitmapHeight, (int)myBitmap.size() },
+  { myBitmap2.data(), myBitmap2Width, myBitmap2Height, (int)myBitmap2.size() }
 };
 
 // 페이지 순서 정하기
@@ -310,10 +311,6 @@ void drawTextPage(int index) {
 // bitmap, width, height를 파라미터로 받아서 그립니다.
 // ------------------------------------------------------------
 void drawBitmapPage(const unsigned char* bitmap, int bitmapWidth, int bitmapHeight) {
-  if (bitmap == nullptr) {
-    return;
-  }
-
   if (bitmapWidth <= 0 || bitmapHeight <= 0) {
     bitmapWidth = display.width();
     bitmapHeight = display.height();
@@ -339,6 +336,9 @@ void drawBitmapPage(const unsigned char* bitmap, int bitmapWidth, int bitmapHeig
 void drawBitmapByIndex(int bitmapIndex) {
   if (bitmapIndex >= 0 && bitmapIndex < bitmapPageCount) {
     BitmapInfo bitmap = bookBitmaps[bitmapIndex];
+    if (bitmap.byteCount <= 1) {
+      return;
+    }
     drawBitmapPage(bitmap.data, bitmap.width, bitmap.height);
   }
 }
