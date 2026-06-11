@@ -1,10 +1,5 @@
-// ============================================================
-// 포켓 eBook 워크샵 코드
+// Pocket E-Book
 // Raspberry Pi Pico RP2040 + Waveshare 1.54" V2 e-paper
-//
-// 오늘은 아래의 "수정 영역"만 바꿔봅니다.
-// 수정한 뒤 Arduino IDE의 업로드 버튼을 눌러 Pico에 넣어주세요.
-// ============================================================
 
 #include <SPI.h>
 #include <GxEPD2_BW.h>
@@ -12,27 +7,42 @@
 #include <vector>
 #include <string>
 
-// 이미지 하나의 정보
-// 이미지 데이터 이름, 가로 크기, 세로 크기를 함께 저장합니다.
+// 이미지 메타 데이터
 struct BitmapInfo {
   const unsigned char* data;
   int width;
   int height;
 };
 
+// 페이지의 종류
+// PAGE_TEXT   = 글 페이지
+// PAGE_BITMAP = 이미지 페이지
+enum PageType {
+  PAGE_TEXT,
+  PAGE_BITMAP
+};
 
-// ============================================================
-// 여기만 수정해보세요
-// ============================================================
+// 실제 책의 페이지 순서 정보
+struct PageOrder {
+  PageType type;
+  int index;
+};
 
-// eBook 제목
-// 현재 폰트에서는 한글이 제대로 표시되지 않을 수 있습니다.
-// 화면 테스트는 영어/숫자로 먼저 해보는 것을 추천합니다.
-const char* bookTitle = "";
+// macro for { struct, variable}
+#define TEXT_PAGE(pageIndex) \
+  { PAGE_TEXT, pageIndex }
+
+#define IMAGE_PAGE(bitmapIndex) \
+  { PAGE_BITMAP, bitmapIndex }
+
+// 1. 문장 바꾸기
 
 // eBook에 들어갈 문장들
 // 문장 하나가 한 페이지처럼 사용됩니다.
-// 문장을 추가하거나 바꾼 뒤 업로드해서 화면을 확인해보세요.
+//
+// bookPages[0] = 첫 번째 문장
+// bookPages[1] = 두 번째 문장
+// bookPages[2] = 세 번째 문장
 const char* bookPages[] = {
   "This is the first page.",
   "This is a slow little book.",
@@ -40,13 +50,11 @@ const char* bookPages[] = {
   "The screen remembers the text."
 };
 
-// 페이지 넘김 방식
-// 0 = 마지막 페이지에서 멈추기
-// 1 = 마지막 페이지 뒤에 처음 페이지로 돌아가기
-const int pageMode = 1;
 
-// 이미지 데이터
-// 이미지를 넣고 싶으면 아래 변환기에서 만든 비트맵 데이터를 { } 안에 붙여넣습니다.
+// 2. 이미지 붙여넣기
+
+// 이미지는 image2cpp에서 64 x 64 흑백 이미지로 변환한 뒤,
+// 아래 { } 안에 붙여넣습니다.
 //
 // 이미지 to 비트맵 변환기:
 // https://javl.github.io/image2cpp/
@@ -56,69 +64,41 @@ const int pageMode = 1;
 // - 출력 형식: C/C++ 배열
 // - 색상: 흑백
 //
-// 변환한 비트맵은 myBitmap의 = 오른쪽 { } 안에 붙여넣습니다.
-//
 // 예:
 // const std::vector<unsigned char> myBitmap = {
 //   0x00, 0x18, 0x3C, 0x7E, ...
 // };
+//
+// 한글이나 이모지는 글자로 출력하기보다,
+// 이미지로 만들어서 넣는 것을 추천합니다.
+
 const std::vector<unsigned char> myBitmap = {
-  0x00 // 여기에 이미지 데이터 붙여넣기
+  0x00 // 첫 번째 이미지 데이터 붙여넣기
 };
 
-// 두 번째 이미지가 필요하면 여기에 붙여넣습니다.
-// 필요 없으면 비워둡니다.
 const std::vector<unsigned char> myBitmap2 = {
-  0x00 // 여기에 두 번째 이미지 데이터 붙여넣기
+  0x00 // 두 번째 이미지 데이터 붙여넣기
 };
 
-// 이미지 크기
-// 변환한 이미지의 크기에 맞게 수정합니다.
-// 1.54인치 e-paper에서는 64x64 또는 80x80 정도를 추천합니다.
-// 전체 화면 200x200 이미지를 쓰고 싶으면 width와 height를 0으로 둡니다.
-const int myBitmapWidth = 0;
-const int myBitmapHeight = 0;
-
-const int myBitmap2Width = 0;
-const int myBitmap2Height = 0;
-
-// eBook에 들어갈 이미지들
-// 이미지를 추가하려면 위에 이미지 데이터를 만들고, 아래 목록에 추가합니다.
-// 이 목록도 직접 수정하는 곳입니다.
+// 이미지를 더 넣고 싶다면 위 형식을 복사해서 추가할 수 있습니다.
 //
 // 예:
-// { myBitmap.data(), 64, 64 }
+// const std::vector<unsigned char> myBitmap3 = {
+//   0x00 // 세 번째 이미지 데이터 붙여넣기
+// };
+
+
+// 3. 페이지 순서 바꾸기
+
+// 여기에서 실제 eBook의 페이지 순서를 정합니다. 나열 순서가 곧 페이지 순서.
 //
-// 전체 화면 200x200 이미지는 이렇게 적을 수 있습니다.
-// { myFullScreenBitmap.data(), 0, 0 }
-const BitmapInfo bookBitmaps[] = {
-  { myBitmap.data(), myBitmapWidth, myBitmapHeight },
-  { myBitmap2.data(), myBitmap2Width, myBitmap2Height }
-};
-
-// 페이지 순서 정하기
-// TEXT_PAGE(0)은 bookPages[0]의 문장을 보여줍니다.
-// IMAGE_PAGE(0)은 bookBitmaps[0]의 이미지를 보여줍니다.
-// 이 목록도 직접 수정하는 곳입니다.
+// TEXT_PAGE(0)  = bookPages[0]의 문장
+// TEXT_PAGE(1)  = bookPages[1]의 문장
+// IMAGE_PAGE(0) = myBitmap 이미지
+// IMAGE_PAGE(1) = myBitmap2 이미지
 //
-// 텍스트만 쓰고 싶으면 IMAGE_PAGE 줄을 지워도 됩니다.
-// 이미지가 필요 없으면 IMAGE_PAGE 줄을 지워도 됩니다.
-enum PageType {
-  PAGE_TEXT,
-  PAGE_BITMAP
-};
-
-struct PageOrder {
-  PageType type;
-  int index;
-};
-
-#define TEXT_PAGE(pageIndex) \
-  { PAGE_TEXT, pageIndex }
-
-#define IMAGE_PAGE(bitmapIndex) \
-  { PAGE_BITMAP, bitmapIndex }
-
+// 이미지는 여러 개 넣을 수 있지만,
+// 한 페이지에는 이미지 하나만 보여줍니다.
 const PageOrder pages[] = {
   TEXT_PAGE(0),
   TEXT_PAGE(1),
@@ -129,9 +109,24 @@ const PageOrder pages[] = {
 };
 
 
-// ============================================================
-// 아래 코드는 지금은 건드리지 않습니다
-// ============================================================
+// 이미지 목록 만들기
+
+// 이 워크샵에서는 모든 이미지를 64 x 64 크기로 사용합니다.
+// image2cpp에서도 반드시 64 x 64로 변환해주세요.
+const int BITMAP_WIDTH = 64;
+const int BITMAP_HEIGHT = 64;
+
+// 위에서 붙여넣은 이미지들을 책에서 사용할 수 있도록 목록으로 만듭니다.
+//
+// myBitmap  -> IMAGE_PAGE(0)
+// myBitmap2 -> IMAGE_PAGE(1)
+const BitmapInfo bookBitmaps[] = {
+  { myBitmap.data(), BITMAP_WIDTH, BITMAP_HEIGHT },
+  { myBitmap2.data(), BITMAP_WIDTH, BITMAP_HEIGHT }
+
+  // 세 번째 이미지를 추가했다면 아래처럼 한 줄을 더 넣을 수 있습니다.
+  // , { myBitmap3.data(), BITMAP_WIDTH, BITMAP_HEIGHT }
+};
 
 
 // 전체 페이지 수를 자동으로 계산합니다.
@@ -151,7 +146,7 @@ const int bitmapPageCount = sizeof(bookBitmaps) / sizeof(bookBitmaps[0]);
 // 버튼 연결 핀
 #define BTN_NEXT  15
 #define BTN_PREV  14
-#define BTN_HOME  5
+
 
 
 // e-paper 디스플레이 설정
@@ -178,9 +173,7 @@ std::vector<std::vector<std::string>> renderedTextPages;
 int currentPage = 0;
 
 
-// ------------------------------------------------------------
 // 문자열의 화면 너비를 계산합니다.
-// ------------------------------------------------------------
 int measureWidth(const std::string& text) {
   int16_t x1, y1;
   uint16_t w, h;
@@ -191,9 +184,7 @@ int measureWidth(const std::string& text) {
 }
 
 
-// ------------------------------------------------------------
 // 긴 문장을 e-paper 화면 너비에 맞게 여러 줄로 나눕니다.
-// ------------------------------------------------------------
 std::vector<std::string> wrapText(const char* text) {
   std::vector<std::string> lines;
   std::vector<std::string> words;
@@ -242,19 +233,12 @@ std::vector<std::string> wrapText(const char* text) {
 }
 
 
-// ------------------------------------------------------------
 // 참가자가 작성한 bookPages를 화면에 그릴 수 있는 형태로 준비합니다.
-// ------------------------------------------------------------
 void buildTextPages() {
   renderedTextPages.clear();
 
   for (int i = 0; i < bookPageCount; i++) {
     std::vector<std::string> pageLines;
-
-    if (i == 0) {
-      pageLines.push_back(std::string(bookTitle));
-      pageLines.push_back("");
-    }
 
     std::vector<std::string> wrapped = wrapText(bookPages[i]);
     for (auto& line : wrapped) {
@@ -266,9 +250,7 @@ void buildTextPages() {
 }
 
 
-// ------------------------------------------------------------
 // 페이지 번호를 오른쪽 아래에 표시합니다.
-// ------------------------------------------------------------
 void drawPageIndicator(int index) {
   char indicator[16];
   snprintf(indicator, sizeof(indicator), "%d/%d", index + 1, pageCount);
@@ -278,9 +260,7 @@ void drawPageIndicator(int index) {
 }
 
 
-// ------------------------------------------------------------
 // 텍스트 페이지를 그립니다.
-// ------------------------------------------------------------
 void drawTextPage(int index) {
   if (index < 0 || index >= bookPageCount) {
     return;
@@ -305,16 +285,9 @@ void drawTextPage(int index) {
 }
 
 
-// ------------------------------------------------------------
 // 이미지 페이지를 그립니다.
-// bitmap, width, height를 파라미터로 받아서 그립니다.
-// ------------------------------------------------------------
+// 이미지 데이터와 크기를 받아서 화면 가운데에 그립니다.
 void drawBitmapPage(const unsigned char* bitmap, int bitmapWidth, int bitmapHeight) {
-  if (bitmapWidth <= 0 || bitmapHeight <= 0) {
-    bitmapWidth = display.width();
-    bitmapHeight = display.height();
-  }
-
   int x = (display.width() - bitmapWidth) / 2;
   int y = (display.height() - bitmapHeight) / 2;
 
@@ -329,9 +302,8 @@ void drawBitmapPage(const unsigned char* bitmap, int bitmapWidth, int bitmapHeig
 }
 
 
-// ------------------------------------------------------------
 // 이미지 번호에 맞는 그림을 그립니다.
-// ------------------------------------------------------------
+// IMAGE_PAGE(0), IMAGE_PAGE(1) 같은 번호가 여기로 들어옵니다.
 void drawBitmapByIndex(int bitmapIndex) {
   if (bitmapIndex >= 0 && bitmapIndex < bitmapPageCount) {
     BitmapInfo bitmap = bookBitmaps[bitmapIndex];
@@ -340,10 +312,8 @@ void drawBitmapByIndex(int bitmapIndex) {
 }
 
 
-// ------------------------------------------------------------
 // 특정 페이지를 e-paper 화면에 표시합니다.
 // pages[]의 type에 따라 텍스트 또는 이미지를 그립니다.
-// ------------------------------------------------------------
 void showPage(int index) {
   if (index < 0 || index >= pageCount) {
     return;
@@ -371,17 +341,15 @@ void showPage(int index) {
 }
 
 
-// ------------------------------------------------------------
 // 버튼이 눌렸는지 확인합니다.
 // 버튼을 한 번 누를 때 한 번만 동작하도록 처리합니다.
-// ------------------------------------------------------------
 bool buttonPressed(int pin) {
   if (digitalRead(pin) == LOW) {
-    delay(50);
+    delay(20);
 
     if (digitalRead(pin) == LOW) {
       while (digitalRead(pin) == LOW) {
-        delay(10);
+        delay(5);
       }
 
       return true;
@@ -392,50 +360,37 @@ bool buttonPressed(int pin) {
 }
 
 
-// ------------------------------------------------------------
 // 다음 페이지로 이동합니다.
-// ------------------------------------------------------------
 void goNextPage() {
   if (currentPage < pageCount - 1) {
     currentPage++;
-  } else if (pageMode == 1) {
-    currentPage = 0;
   } else {
-    currentPage = pageCount - 1;
+    currentPage = 0;
   }
-
   showPage(currentPage);
 }
 
 
-// ------------------------------------------------------------
 // 이전 페이지로 이동합니다.
-// ------------------------------------------------------------
 void goPrevPage() {
   if (currentPage > 0) {
     currentPage--;
-  } else if (pageMode == 1) {
-    currentPage = pageCount - 1;
   } else {
-    currentPage = 0;
+    currentPage = pageCount - 1;
   }
 
   showPage(currentPage);
 }
 
 
-// ------------------------------------------------------------
 // 첫 페이지로 이동합니다.
-// ------------------------------------------------------------
 void goHomePage() {
   currentPage = 0;
   showPage(currentPage);
 }
 
 
-// ------------------------------------------------------------
 // 처음 한 번 실행되는 설정입니다.
-// ------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
   delay(500);
@@ -443,7 +398,7 @@ void setup() {
   // 버튼 설정
   pinMode(BTN_NEXT, INPUT_PULLUP);
   pinMode(BTN_PREV, INPUT_PULLUP);
-  pinMode(BTN_HOME, INPUT_PULLUP);
+;
 
   // SPI 설정
   SPI.setSCK(EPD_CLK);
@@ -462,10 +417,8 @@ void setup() {
 }
 
 
-// ------------------------------------------------------------
 // 계속 반복 실행되는 부분입니다.
 // 버튼 입력을 확인하고 페이지를 바꿉니다.
-// ------------------------------------------------------------
 void loop() {
   if (buttonPressed(BTN_NEXT)) {
     goNextPage();
@@ -475,7 +428,4 @@ void loop() {
     goPrevPage();
   }
 
-  if (buttonPressed(BTN_HOME)) {
-    goHomePage();
-  }
 }
