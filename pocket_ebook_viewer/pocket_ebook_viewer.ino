@@ -60,7 +60,7 @@ const char* bookPages[] = {
 // https://javl.github.io/image2cpp/
 //
 // 추천 설정:
-// - 크기: 64 x 64
+// - 크기: 200 * 200
 // - 출력 형식: C/C++ 배열
 // - 색상: 흑백
 //
@@ -111,18 +111,13 @@ const PageOrder pages[] = {
 
 // 이미지 목록 만들기
 
-// 이 워크샵에서는 모든 이미지를 64 x 64 크기로 사용합니다.
-// image2cpp에서도 반드시 64 x 64로 변환해주세요.
-const int BITMAP_WIDTH = 64;
-const int BITMAP_HEIGHT = 64;
-
 // 위에서 붙여넣은 이미지들을 책에서 사용할 수 있도록 목록으로 만듭니다.
 //
 // myBitmap  -> IMAGE_PAGE(0)
 // myBitmap2 -> IMAGE_PAGE(1)
 const BitmapInfo bookBitmaps[] = {
-  { myBitmap.data(), BITMAP_WIDTH, BITMAP_HEIGHT },
-  { myBitmap2.data(), BITMAP_WIDTH, BITMAP_HEIGHT }
+  { myBitmap.data(), 200, 200 },
+  { myBitmap2.data(), 200, 200 }
 
   // 세 번째 이미지를 추가했다면 아래처럼 한 줄을 더 넣을 수 있습니다.
   // , { myBitmap3.data(), BITMAP_WIDTH, BITMAP_HEIGHT }
