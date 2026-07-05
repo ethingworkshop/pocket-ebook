@@ -53,7 +53,7 @@ const char* bookPages[] = {
 
 // 2. 이미지 붙여넣기
 
-// 이미지는 image2cpp에서 64 x 64 흑백 이미지로 변환한 뒤,
+// 이미지는 image2cpp에서 200 * 200 흑백 이미지로 변환한 뒤,
 // 아래 { } 안에 붙여넣습니다.
 //
 // 이미지 to 비트맵 변환기:
@@ -120,7 +120,7 @@ const BitmapInfo bookBitmaps[] = {
   { myBitmap2.data(), 200, 200 }
 
   // 세 번째 이미지를 추가했다면 아래처럼 한 줄을 더 넣을 수 있습니다.
-  // , { myBitmap3.data(), BITMAP_WIDTH, BITMAP_HEIGHT }
+  // , { myBitmap3.data(), width, height }
 };
 
 
