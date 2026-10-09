@@ -292,6 +292,7 @@ void drawBitmapPage(const unsigned char* bitmap, int bitmapWidth, int bitmapHeig
     bitmap,
     bitmapWidth,
     bitmapHeight,
+    GxEPD_WHITE,
     GxEPD_BLACK
   );
 }
